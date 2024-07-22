@@ -6,6 +6,7 @@ from backend.profiles.models import User
 from backend.answers.models import Answer
 from backend.questions.models import Question
 from backend.profiles.schemas import UserCreate, UserID
+from fastapi.middleware.cors import CORSMiddleware
 from backend.answers.schemas import AnswerCreate
 from backend.questions.schemas import QuestionCreate
 from sqlalchemy.orm import Session
@@ -17,7 +18,13 @@ from pysummarization.tokenizabledoc.simple_tokenizer import SimpleTokenizer
 from pysummarization.abstractabledoc.top_n_rank_abstractor import TopNRankAbstractor
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # You can restrict this to specific origins
+    allow_credentials=True,
+    allow_methods=["*"],  # You can restrict this to specific methods
+    allow_headers=["*"],  # You can restrict this to specific headers
+)
 Base.metadata.create_all(engine)
 
 genai.configure(api_key="AIzaSyCTofCTX4Vvfk28TTqUPYYCul6kZJDxD78")
@@ -91,4 +98,4 @@ async def generate_response(question_body: QuestionCreate, db: Session = Depends
         answer = Answer(answer=response.text, user_id=question_body.user_id, question_id=question.id)
         db.add(answer)  
         db.commit()
-        return {"Response": answer.answer}
+        return {"response": answer.answer}
